@@ -1,12 +1,14 @@
 <script setup lang="ts">
-  import {ref} from 'vue'
+  import {ref, onMounted} from 'vue'
   import { useQuasar } from 'quasar'
   import { useRouter } from 'vue-router'
   import { createCustomer, findCustommerIdentity, findOnePaymentCustomer, createPaymentDetail, createTicket, updatePaymentDetail, updateCustommer } from '../composables/useCustommerRegisterComposable'
-  import { Custommer, PaymentDetailInterface } from '../interfaces'
+  import { Custommer, PaymentDetailInterface, PlanInterface } from '../interfaces'
+  import { useEcommerceStore } from '../store/ecommerce-store'
 
   const $q = useQuasar()
   const router = useRouter()
+  const ecommerceStore = useEcommerceStore()
   const newCustommer = ref<Custommer>({
     id: '',
     name: '',
@@ -15,6 +17,7 @@
     email: '',
     address: '',
     phone: '',
+    phone2: '',
     city: '',
     province: '',
     country: ''
@@ -34,6 +37,7 @@
   const done1 = ref<boolean>(false)
   const done2 = ref<boolean>(false)
   const done3 = ref<boolean>(false)
+  const planBuy = ref<PlanInterface>()
 
   //Datos formulario Detalle Pago
   const paymentDetailForm = ref({
@@ -63,10 +67,16 @@
     email: <string | null> null,
     address: <string | null> null,
     phone: <string | null> null,
+    phone2: <string | null> null,
     city: <string | null> null,
     province: <string | null> null,
     country: <string | null> null,
     checkbox: <boolean | null> true,
+  })
+
+  onMounted(() => {
+    console.log('pagos',ecommerceStore.data)
+    planBuy.value = ecommerceStore.data
   })
 
   function onSubmit() {
@@ -81,6 +91,7 @@
       email: custommerForm.value.email as string,
       address: custommerForm.value.address as string,
       phone: custommerForm.value.phone as string,
+      phone2: custommerForm.value.phone2 ? custommerForm.value.phone2 as string : '',
       city: custommerForm.value.city as string,
       province: custommerForm.value.province as string,
       country: custommerForm.value.country as string,
@@ -167,7 +178,7 @@
       custommer_identity: document.value as string,
       custommer_name: `${custommerForm.value.name} ${custommerForm.value.last_name}` as string,
       custommer_email: custommerForm.value.email as string,
-      cant_number: 2,
+      cant_number: planBuy.value?.quantity_number as number,
       ticket_number: '',
       event_name: 'Rifa Moto NMAX Modelo 2024',
       event_date: '31/10/2023',
@@ -221,6 +232,7 @@
       email: null,
       address: null,
       phone: null,
+      phone2: null,
       city: null,
       province: null,
       country: null,
@@ -305,21 +317,26 @@
                   <q-input dense outlined class="full-width" v-model="custommerForm.last_name" label="Apellidos *"/>
                 </q-item>
               </div>
-              <div class="col-12">
+              <div class="col-6">
                 <q-item>
                   <q-input dense autogrow outlined v-model="custommerForm.email" class="full-width"
                             label="Correo Electrónico *"/>
                 </q-item>
               </div>
-              <div class="col-12">
+              <div class="col-6">
                 <q-item>
                   <q-input dense autogrow outlined v-model="custommerForm.address" class="full-width"
-                           label="Dirreción 1 *"/>
+                           label="Dirreción *"/>
                 </q-item>
               </div>
               <div class="col-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.phone" label="Telefono *"/>
+                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"  v-model="custommerForm.phone" label="Telefono Principal (whatsapp) *"/>
+                </q-item>
+              </div>
+              <div class="col-6">
+                <q-item>
+                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"  v-model="custommerForm.phone2" label="Telefono Opcional"/>
                 </q-item>
               </div>
               <div class="col-6">
@@ -407,85 +424,24 @@
                 <q-item-label header class="text-h6">Resumen de la Compra</q-item-label>
                 <q-item class="full-width">
                   <q-item-section>
-                    <q-item-label lines="1">Ticket Plan 1</q-item-label>
-                    <q-item-label caption>Caption</q-item-label>
+                    <q-item-label class="text-uppercase" lines="1">{{ planBuy?.name }}</q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    $10.99
+                    ${{ planBuy?.price }}
                   </q-item-section>
                 </q-item>
-                <q-separator></q-separator>
-                <q-item class="full-width">
-                  <q-item-section>
-                    <q-item-label lines="1">Ticket Plan 2</q-item-label>
-                    <q-item-label caption>Caption Ticket Plan 2</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    $19.99
-                  </q-item-section>
-                </q-item>
-                <q-separator></q-separator>
-                <q-item class="full-width">
-                  <q-item-section>
-                    <q-item-label lines="1">Ticket Plan 3</q-item-label>
-                    <q-item-label caption>Caption Ticket Plan 3</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    $78.99
-                  </q-item-section>
-                </q-item>
-                <q-separator></q-separator>
-                <q-item class="full-width">
-                  <q-item-section>
-                    <q-item-label lines="1">Ticket Plan 4</q-item-label>
-                    <q-item-label caption>Caption Ticket Plan 4</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    $178.99
-                  </q-item-section>
-                </q-item>
-                <q-separator></q-separator>
 
-                <q-item class="full-width">
-                  <q-item-section>
-                    <q-item-label lines="1">Shipping</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    Free
-                  </q-item-section>
-                </q-item>
                 <q-separator></q-separator>
                 <q-item class="full-width" style="border-top: 3px dotted blue">
                   <q-item-section>
-                    <q-item-label lines="1">Total</q-item-label>
+                    <q-item-label class="text-uppercase" lines="1">Total</q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    $288.96
+                    ${{ planBuy?.price }}
                   </q-item-section>
                 </q-item>
               </div>
             </div>
-
-            <q-card class="rounded-borders">
-              <q-card-section horizontal>
-                <q-card-section class="col-5 q-pt-xs">
-                  <div class="text-h6 text-center">Info compra</div>
-                  <div class="text-subtitle1 ">Pratik Patel</div>
-                  <div class="text-subtitle2">
-                    4841 Johnston Locks
-                  </div>
-                </q-card-section>
-                <q-card-section class="col-7 q-pt-xs">
-                  <div class="text-h6 text-center">Detalle de Pago</div>
-                  <div class="text-subtitle1 q-mb-xs">Card type - Visa</div>
-                  <div class="text-subtitle1 q-mb-xs">Card holder - P***ik Patel</div>
-                  <div class="text-subtitle1 q-mb-xs">Card Number - xxxx-xxxx-xxxx-1234</div>
-                  <div class="text-subtitle1 q-mb-xs">Expiry date - 04/2012</div>
-                </q-card-section>
-
-
-              </q-card-section>
-            </q-card>
 
             <q-stepper-navigation>
 
@@ -510,57 +466,15 @@
               />
             </q-card-section>
             <q-card-section class="">
-              <div class="text-subtitle2 q-mt-sm">Ticket Plan 1</div>
-              <div class="text-subtitle2  q-mb-xs">$10.99</div>
+              <div class="text-subtitle2 q-mt-sm text-uppercase">{{ planBuy?.name }}</div>
+              <div class="text-subtitle2  q-mb-xs">${{ planBuy?.price }}</div>
             </q-card-section>
           </q-card-section>
-          <q-separator/>
-          <q-card-section horizontal class="q-pa-none">
-            <q-card-section class="col-5 flex flex-center">
-              <q-img height="80px"
-                     class="rounded-borders"
-                     src="https://cdn.quasar.dev/img/parallax2.jpg"
-              />
-            </q-card-section>
-            <q-card-section class="">
-              <div class="text-subtitle2 q-mt-md">Ticket Plan 2</div>
-              <div class="text-subtitle2  q-mb-xs">$19.99</div>
-            </q-card-section>
-          </q-card-section>
-          <q-separator/>
-          <q-card-section horizontal class="q-pa-none">
-            <q-card-section class="col-5 flex flex-center">
-              <q-img height="80px"
-                     class="rounded-borders"
-                     src="https://cdn.quasar.dev/img/parallax2.jpg"
-              />
-            </q-card-section>
-            <q-card-section class="">
-              <div class="text-subtitle2 q-mt-md">Ticket Plan 3</div>
-              <div class="text-subtitle2 q-mb-xs">$78.99</div>
-            </q-card-section>
-          </q-card-section>
-          <q-separator/>
-          <q-card-section horizontal class="q-pa-none">
-            <q-card-section class="col-5 flex flex-center">
-              <q-img height="80px"
-                     class="rounded-borders"
-                     src="https://cdn.quasar.dev/img/parallax2.jpg"
-              />
-            </q-card-section>
-            <q-card-section class="">
-              <div class="text-subtitle2 q-mt-md">Ticket Plan 4
-              </div>
-              <div class="text-subtitle2 q-mb-xs">$178.99
-              </div>
-            </q-card-section>
-          </q-card-section>
-
           <q-separator></q-separator>
           <q-card-section class="row">
             <div class="  col-12 text-h6 full-width">
               <div class="float-right q-mr-md">
-                Total : <span class="text-blue">$288.96</span></div>
+                Total : <span class="text-blue">${{ planBuy?.price }}</span></div>
             </div>
           </q-card-section>
 

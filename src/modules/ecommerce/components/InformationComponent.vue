@@ -11,21 +11,22 @@
       <q-carousel-slide :name="1" class="q-pa-none">
         <q-scroll-area class="fit">
           <q-card class="my-card">
-            <img src="src/assets/moto.jpg"/>
+            <!-- <q-img src="src/assets/motos.jpg"></q-img> -->
+            <img src="../../../assets/moto.jpg"/>
           </q-card>
         </q-scroll-area>
       </q-carousel-slide>
       <q-carousel-slide :name="2" class="q-pa-none">
         <q-scroll-area class="fit">
           <q-card class="my-card">
-            <img src="src/assets/pc.png"/>
+            <img src="../../../assets/pc.png"/>
           </q-card>
         </q-scroll-area>
       </q-carousel-slide>
       <q-carousel-slide :name="3" class="q-pa-none">
         <q-scroll-area class="fit">
           <q-card class="my-card">
-            <img src="src/assets/dinero.png"/>
+            <img src="../../../assets/dinero.png"/>
           </q-card>
         </q-scroll-area>
       </q-carousel-slide>

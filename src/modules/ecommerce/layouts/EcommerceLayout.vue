@@ -11,12 +11,12 @@
 </script>
 
 <template>
-  <q-layout view="hHh lpR fFf" style="background:linear-gradient( 135deg, #3af0f7 10%, #164bdd 100%)">
+  <q-layout view="hHh lpR fFf" style="background:linear-gradient( 135deg, #18191a 10%, #5e626e 100%)">
 
     <q-header class="bg-transparent text-white">
       <q-toolbar class="q-pa-md">
-        <q-toolbar-title>
-          Logo
+        <q-toolbar-title >
+          <img style="height: 10%; width: 10%;" src="../../../assets/EVENTS.png" />
         </q-toolbar-title>
         <q-space/>
 
@@ -24,8 +24,8 @@
           <q-btn square dense flat color="text-grey-7" to="/" label="inicio" icon="dashboard">
             <q-tooltip>Home</q-tooltip>
           </q-btn>
-          <q-btn square dense flat color="text-grey-7" to="/Pricing" label="Precios" icon="timeline">
-            <q-tooltip>Precios</q-tooltip>
+          <q-btn square dense flat color="text-grey-7" to="/sales" label="Comprar" icon="shopping_cart">
+            <q-tooltip>Comprar</q-tooltip>
           </q-btn>
           <q-btn square dense flat color="text-grey-7" to="/login" label="Login" icon="verified_user">
             <q-tooltip>Login</q-tooltip>
@@ -50,5 +50,8 @@
 </template>
 
 <style scoped lang="scss">
-
+  .tittle-logo {
+    height: 50px;
+    width: 50px;
+  }
 </style>

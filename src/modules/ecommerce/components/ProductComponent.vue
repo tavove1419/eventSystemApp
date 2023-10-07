@@ -1,44 +1,49 @@
 <script setup lang="ts">
-  import {Product} from './../interfaces/index'
+  import { onMounted, ref } from 'vue';
+  import { getAllPlan } from '../composables/usePlanComposable';
+  import { Product, PlanInterface } from './../interfaces/index'
+  import { useQuasar } from 'quasar'
+  import { useEcommerceStore } from '../store/ecommerce-store';
 
 
-  const pricing_data: Product[] = [
-    {
-      title: 'Ticket Plan 1',
-      price: '$1',
-      icon: 'shopping_cart_checkout',
-      background_image: 'linear-gradient(to right, #ff5733 0%, #ec8c69 100%)',
-      text: 'Cuentas con 2 opciones para ganar.'
-    },
-    {
-      title: 'Ticket Plan 2',
-      price: '$25',
-      icon: 'shopping_cart_checkout',
-      background_image: 'linear-gradient(-225deg, #ffd700 0%, #6BBBFF 100%)',
-      text: 'Cuentas con 5 opciones para ganar.'
-    },
-    {
-      title: 'Ticket Plan 3',
-      price: '$250',
-      icon: 'shopping_cart_checkout',
-      background_image: 'linear-gradient(to right, #2B86C5 0%, #2B86C5 100%)',
-      text: 'Cuentas con 7 opciones para ganar.'
-    },
-    {
-      title: 'Ticket Plan 4',
-      price: '$750',
-      icon: 'shopping_cart_checkout',
-      background_image: 'linear-gradient(87deg, rgb(17, 205, 239), rgb(17, 113, 239)) !important',
-      text: 'Cuentas con 10 opciones para ganar.'
-    },
-  ]
+  const $q = useQuasar()
+  const ecommerceStore = useEcommerceStore()
+  const pricing_data = ref<Product[]>([])
+  const planList = ref<PlanInterface[]>([])
+  const plan = ref<PlanInterface>()
+
+  onMounted(() => {
+    $q.loading.show({message: 'Cargando planes'})
+    getAllPlan().then((response) => {
+      planList.value = response.data
+      for (const plan of planList.value) {
+        pricing_data.value.push({
+          id: plan.id,
+          title: plan.name,
+          price: `$ ${plan.price}`,
+          icon: 'shopping_cart_checkout',
+          background_image: 'radial-gradient(circle, #ff5733 0%, #ffd700 100%) !important',
+          text: `Cuentas con ${plan.quantity_number} opcione(s) para ganar.`
+        })
+      }
+      $q.loading.hide()
+    }).catch((error) => error);
+  })
+
+  function onBuy(id: string): void {
+    console.log('id', id)
+    plan.value = planList.value.find((data) => data.id === id)
+    console.log('este el tiket', plan.value)
+    ecommerceStore.buyTicket(plan.value as PlanInterface)
+  }
 
 </script>
 <template>
-  <div class="col-lg-3 col-md-3 col-xs-12 col-sm-12" v-for="{title, icon, price, text, background_image} in pricing_data" :key="title">
+
+  <div class="col-lg-3 col-md-3 col-xs-12 col-sm-12" v-for="{id, title, icon, price, text, background_image} in pricing_data" :key="title">
     <q-card class="text-white" :style="{'background-image': background_image}">
       <q-card-section>
-          <div class="text-h6 text-center">
+          <div class="text-h6 text-center text-uppercase">
             {{ title }}
           </div>
         </q-card-section>
@@ -58,9 +63,10 @@
           </div>
         </q-card-section>
         <q-card-actions vertical align="center">
-          <q-btn outline to="/purchase" class="text-capitalize">Comprar Ahora</q-btn>
+          <q-btn outline to="/purchase" @click="onBuy(id)"  class="text-capitalize">Comprar Ahora</q-btn>
         </q-card-actions>
       </q-card>
+      <q-space></q-space>
   </div>
 </template>
 

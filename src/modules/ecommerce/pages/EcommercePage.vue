@@ -2,6 +2,7 @@
   import ProductComponent from './../../ecommerce/components/ProductComponent.vue';
   import InformationComponent from './../../ecommerce/components/InformationComponent.vue';
   import { ref } from 'vue'
+  import ProgressBarComponent from '../components/ProgressBarComponent.vue';
 
   const icon_position = ref<string>('left')
   const items = [
@@ -50,7 +51,13 @@
         </div>
       </div>
     </section>
-
+    <q-space />
+    <section class="q-pb-lg">
+      <div class="row q-col-gutter-sm q-px-sm">
+        <ProgressBarComponent></ProgressBarComponent>
+      </div>
+    </section>
+    <q-space />
     <section class="q-pb-lg">
       <div class="row q-col-gutter-sm q-px-sm">
         <ProductComponent></ProductComponent>

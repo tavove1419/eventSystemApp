@@ -6,6 +6,7 @@ export interface Custommer {
   email: string,
   address: string,
   phone: string,
+  phone2?: string,
   city: string,
   province: string,
   country: string

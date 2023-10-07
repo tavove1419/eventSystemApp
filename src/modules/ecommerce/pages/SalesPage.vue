@@ -1,5 +1,7 @@
+
 <script setup lang="ts">
-  import PurchaseComponent from './../../ecommerce/components/PurchaseComponent.vue';
+  import SalesComponent from './../../ecommerce/components/SalesComponent.vue';
+
 </script>
 
 <template>
@@ -7,14 +9,11 @@
     <section style="min-height: 25vh;" class="flex text-white flex-center layout_bg">
       <div style="position: relative">
         <div class="text-h4 text-center">
-          Finaliza tu compra
-        </div>
-        <div class="text-subtitle2 q-pt-sm text-center">
-          Ingresa la información solicitada para finalizar la compra de este evento
+          Bienvenidos a tu portal de compra de Tickets
         </div>
       </div>
     </section>
-    <PurchaseComponent></PurchaseComponent>
+    <SalesComponent></SalesComponent>
   </q-page-container>
 </template>
 
