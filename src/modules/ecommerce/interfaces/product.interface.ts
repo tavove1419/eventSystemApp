@@ -4,5 +4,6 @@ export interface Product {
   price: string,
   icon: string,
   background_image: string,
-  text: string
+  text: string,
+  quantity: number
 }

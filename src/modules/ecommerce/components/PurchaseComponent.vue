@@ -37,7 +37,9 @@
   const done1 = ref<boolean>(false)
   const done2 = ref<boolean>(false)
   const done3 = ref<boolean>(false)
-  const planBuy = ref<PlanInterface>()
+  const planBuy = ref<PlanInterface[]>([])
+  const number_total = ref<number>(0)
+  const total = ref<number>(0)
 
   //Datos formulario Detalle Pago
   const paymentDetailForm = ref({
@@ -47,17 +49,6 @@
     cvv: <string | null> null,
     card_name: <string | null> null,
   })
-
-  //Datos formulario compra
-  // const ticketForm = ref ({
-  //   custommer_identity: <string | null> null,
-  //   custommer_name: <string | null> null,
-  //   custommer_email: <string | null> null,
-  //   cant_number: <number | null> null,
-  //   event_name: <string | null> null,
-  //   event_date: <string | null> null,
-  //   id_event: <string | null> null,
-  // })
 
   //Datos formulario Cliente
   const custommerForm = ref ( {
@@ -75,8 +66,12 @@
   })
 
   onMounted(() => {
-    console.log('pagos',ecommerceStore.data)
     planBuy.value = ecommerceStore.data
+    total.value = ecommerceStore.totalBuy
+    for (const data of planBuy.value) {
+      const number = data.quantity_sale ? data.quantity_sale : 1
+      number_total.value = number_total.value + (data.quantity_number * number)
+    }
   })
 
   function onSubmit() {
@@ -178,7 +173,7 @@
       custommer_identity: document.value as string,
       custommer_name: `${custommerForm.value.name} ${custommerForm.value.last_name}` as string,
       custommer_email: custommerForm.value.email as string,
-      cant_number: planBuy.value?.quantity_number as number,
+      cant_number: number_total.value as number,
       ticket_number: '',
       event_name: 'Rifa Moto NMAX Modelo 2024',
       event_date: '31/10/2023',
@@ -320,7 +315,7 @@
               <div class="col-6">
                 <q-item>
                   <q-input dense autogrow outlined v-model="custommerForm.email" class="full-width"
-                            label="Correo Electrónico *"/>
+                            label="Correo Electrónico *"/>
                 </q-item>
               </div>
               <div class="col-6">
@@ -420,61 +415,65 @@
             :header-nav="step > 3"
           >
             <div class="row">
-              <div class="col-12">
-                <q-item-label header class="text-h6">Resumen de la Compra</q-item-label>
+              <q-item-label header class="text-h6">Resumen de la Compra</q-item-label>
+              <div class="col-12" v-for="plan in planBuy" :key="plan.name">
                 <q-item class="full-width">
                   <q-item-section>
-                    <q-item-label class="text-uppercase" lines="1">{{ planBuy?.name }}</q-item-label>
+                    <q-item-label class="text-uppercase" lines="1">{{ plan?.name }}</q-item-label>
                   </q-item-section>
                   <q-item-section side>
-                    ${{ planBuy?.price }}
-                  </q-item-section>
-                </q-item>
-
-                <q-separator></q-separator>
-                <q-item class="full-width" style="border-top: 3px dotted blue">
-                  <q-item-section>
-                    <q-item-label class="text-uppercase" lines="1">Total</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    ${{ planBuy?.price }}
+                    ${{ plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1) }}
                   </q-item-section>
                 </q-item>
               </div>
+              <q-separator></q-separator>
+              <q-item class="full-width" style="border-top: 3px dotted blue">
+                <q-item-section>
+                  <q-item-label class="text-uppercase" lines="1">Total</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  ${{ total }}
+                </q-item-section>
+              </q-item>
             </div>
-
             <q-stepper-navigation>
-
-              <q-btn rounded @click="done3 = true, onBuy()" class="float-right q-mr-md q-mb-md" color="blue"
-                     label="Realizar Compra"/>
-              <q-btn flat @click="step = 2" color="primary" rounded label="Regresar" class="q-mr-sm float-right"/>
+            <q-btn rounded @click="done3 = true, onBuy()" class="float-right q-mr-md q-mb-md" color="blue" label="Realizar Compra"/>
+            <q-btn flat @click="step = 2" color="primary" rounded label="Regresar" class="q-mr-sm float-right"/>
             </q-stepper-navigation>
           </q-step>
         </q-stepper>
       </div>
       <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
-        <q-card class="bg-grey-2">
+        <q-card class="bg-grey-2" >
           <q-card-section class="text-center text-h6 text-black ">
             <q-icon name="shopping_cart" class="q-mr-sm"/>
             Resumen de la Compra
           </q-card-section>
-          <q-card-section horizontal>
+          <q-card-section horizontal v-for="plan in planBuy" :key="plan.name">
             <q-card-section class="col-5 flex flex-center">
-              <q-img height="80px"
-                     class="rounded-borders"
-                     src="https://cdn.quasar.dev/img/parallax2.jpg"
+              <q-img
+
+                sizes="(max-width: 400px) 400w,
+                (min-width: 400px) and (max-width: 800px) 800w,
+                (min-width: 800px) and (max-width: 1200px) 1200w,
+                (min-width: 1200px) 1600w"
+                class="rounded-borders img-pequeña"
+                src="../../../assets/buy.png"
               />
             </q-card-section>
             <q-card-section class="">
-              <div class="text-subtitle2 q-mt-sm text-uppercase">{{ planBuy?.name }}</div>
-              <div class="text-subtitle2  q-mb-xs">${{ planBuy?.price }}</div>
+              <div class="text-subtitle2 q-mt-sm text-uppercase">{{ plan?.name }}</div>
+              <div class="text-subtitle2  q-mb-xs"><q-icon color="green" name="currency_exchange" /> {{ plan?.price }}</div>
+              <div class="text-subtitle2  q-mb-xs">Cantidad <q-icon color="green" name="shopping_cart" /> {{ plan?.quantity_sale }}</div>
+              <div class="text-subtitle2  q-mb-xs">Subtotal <q-icon color="green" name="currency_exchange" /> {{ plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1) }}</div>
             </q-card-section>
           </q-card-section>
           <q-separator></q-separator>
           <q-card-section class="row">
             <div class="  col-12 text-h6 full-width">
               <div class="float-right q-mr-md">
-                Total : <span class="text-blue">${{ planBuy?.price }}</span></div>
+                Total : <span class="text-blue">$ {{ total }}</span>
+              </div>
             </div>
           </q-card-section>
 
@@ -487,5 +486,8 @@
 
 
 <style scoped>
-
+  .img-pequeña{
+    width: 100px;
+    height: 100px;
+  }
 </style>

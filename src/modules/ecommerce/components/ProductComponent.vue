@@ -10,7 +10,7 @@
   const ecommerceStore = useEcommerceStore()
   const pricing_data = ref<Product[]>([])
   const planList = ref<PlanInterface[]>([])
-  const plan = ref<PlanInterface>()
+  const plan = ref<PlanInterface[]>([])
 
   onMounted(() => {
     $q.loading.show({message: 'Cargando planes'})
@@ -23,7 +23,8 @@
           price: `$ ${plan.price}`,
           icon: 'shopping_cart_checkout',
           background_image: 'radial-gradient(circle, #ff5733 0%, #ffd700 100%) !important',
-          text: `Cuentas con ${plan.quantity_number} opcione(s) para ganar.`
+          text: `Cuentas con ${plan.quantity_number} opcione(s) para ganar.`,
+          quantity: 1
         })
       }
       $q.loading.hide()
@@ -31,10 +32,12 @@
   })
 
   function onBuy(id: string): void {
-    console.log('id', id)
-    plan.value = planList.value.find((data) => data.id === id)
-    console.log('este el tiket', plan.value)
-    ecommerceStore.buyTicket(plan.value as PlanInterface)
+    const data = planList.value.find((data) => data.id === id)
+    if (data !== undefined) {
+      data.quantity_sale = 1
+    }
+    plan.value.push(data as PlanInterface)
+    ecommerceStore.buyTicket(plan.value, data?.price as number)
   }
 
 </script>
