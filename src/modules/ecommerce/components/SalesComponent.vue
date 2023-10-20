@@ -121,6 +121,7 @@
           </q-td>
           <q-td key="quantity_sale" :props="props">
             <q-input
+              :disable="!ecommerceStore.isActiveEvente"
               outlined
               style="max-width: 100px"
               :type="'number'"
@@ -148,7 +149,7 @@
         </q-item>
       </q-card-actions>
       <q-card-actions align="center">
-        <q-btn color="red" @click="onBuy()" icon="shopping_cart_checkout" icon-right="send" label="Finalizar Compra" />
+        <q-btn color="red" @click="onBuy()" :disable="!ecommerceStore.isActiveEvente" icon="shopping_cart_checkout" icon-right="send" label="Finalizar Compra" />
       </q-card-actions>
     </q-card>
   </div>

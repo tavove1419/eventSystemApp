@@ -28,6 +28,3 @@ export const updatePaymentDetail = (id: string, paymentDetail: PaymentDetailInte
 export const createTicket = (ticket: TicketInterface) => {
   return apiEvents.post('/api/v1/ticket/', ticket)
 }
-
-
-

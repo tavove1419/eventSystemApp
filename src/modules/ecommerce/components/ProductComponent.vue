@@ -66,7 +66,7 @@
           </div>
         </q-card-section>
         <q-card-actions vertical align="center">
-          <q-btn outline to="/purchase" @click="onBuy(id)"  class="text-capitalize">Comprar Ahora</q-btn>
+          <q-btn outline to="/purchase" @click="onBuy(id)" :disable="!ecommerceStore.isActiveEvente" class="text-capitalize">Comprar Ahora</q-btn>
         </q-card-actions>
       </q-card>
       <q-space></q-space>

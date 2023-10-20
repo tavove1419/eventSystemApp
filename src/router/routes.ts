@@ -1,4 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
+import AuthenticatedGuard from './auth-guards';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -33,6 +34,44 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         component: () => import('../modules/authentication/pages/LoginPage.vue')
+      }
+    ]
+  },
+  {
+    path: '/dashboard',
+    name: 'HomeDashboard',
+    beforeEnter: [AuthenticatedGuard],
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Dashboard',
+        component: () => import('pages/IndexPage.vue')
+      },
+      {
+        path: 'event',
+        name: 'Event',
+        component: () => import('../modules/administration/pages/EventPage.vue')
+      },
+      {
+        path: 'plan',
+        name: 'Plan',
+        component: () => import('../modules/administration/pages/PlanPage.vue')
+      },
+      {
+        path: 'user',
+        name: 'User',
+        component: () => import('../modules/administration/pages/UserPage.vue')
+      },
+      {
+        path: 'referrer',
+        name: 'Referrer',
+        component: () => import('../modules/administration/pages/ReferrerPage.vue')
+      },
+      {
+        path: 'winner',
+        name: 'Winner',
+        component: () => import('../modules/administration/pages/WinnerPage.vue')
       }
     ]
   }

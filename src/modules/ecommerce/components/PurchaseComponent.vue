@@ -175,9 +175,9 @@
       custommer_email: custommerForm.value.email as string,
       cant_number: number_total.value as number,
       ticket_number: '',
-      event_name: 'Rifa Moto NMAX Modelo 2024',
+      event_name: ecommerceStore.activeEvent.name,
       event_date: '31/10/2023',
-      id_event: 'b619266d-759b-4dbf-adb7-9989490fdbbe',
+      id_event: ecommerceStore.activeEvent.id as  string,
     }
     createTicket(ticket).then((response) => {
       notify(response.data.message, 'positive')

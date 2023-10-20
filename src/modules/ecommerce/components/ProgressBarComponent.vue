@@ -18,7 +18,7 @@
   <div id="q-app">
     <div class="q-pa-md q-gutter-sm">
     <q-banner inline-actions rounded class="bg-positive text-white text-center">
-        SIGUE EL PROGRESO DE TICKETS, NO ESPERES A ÚLTIMO MOMENTO Y ADQUIERE LOS TUYO PRONTO ANTES DE QUE SE AGOTEN!!!!
+        SIGUE EL PROGRESO DE TICKETS, NO ESPERES A ÚLTIMO MOMENTO Y ADQUIERE LOS TUYOS PRONTO ANTES DE QUE SE AGOTEN!!!!
       <div class="q-pa-md">
         <q-linear-progress size="40px" :value="progress" color="white" class="q-mt-sm">
           <div class="absolute-full flex flex-center">
