@@ -2,6 +2,7 @@ export interface EventInterface {
   id?: string;
   name: string;
   description: string;
+  img?: string;
   status: boolean;
 }
 

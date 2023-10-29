@@ -29,4 +29,8 @@ export const inValidCode = (identity: string, code: string) => {
   return apiEvents.post(`/api/v1/referrer/valid-code/${identity}/${code}`)
 }
 
+export const existCode = (code: string) => {
+  return apiEvents.post(`/api/v1/referrer/exist-code/${code}`)
+}
+
 

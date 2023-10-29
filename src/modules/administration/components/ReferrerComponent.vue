@@ -100,12 +100,14 @@
       message: 'Creando referenciador...'
     })
     referrerForm.value.status = true
+    if (referrerForm.value.code_referrer === null || referrerForm.value.code_referrer === '' ) return notify('El código de referencia no puede estar vacio', 'negative'),  $q.loading.hide()
+    referrerForm.value.code_referrer = referrerForm.value.code_referrer.toString()
     createReferrer(referrerForm.value as ReferrerInterface).then((response) => {
       response.data
       notify('Referenciador creado con exito!', 'positive')
       gellAllReferrer()
-    }).catch(() => {
-      notify('Revisar que la información este completa', 'negative')
+    }).catch((error) => {
+      notify( error.message ? error.message :'Revisar que la información este completa', 'negative')
     }).finally(() => $q.loading.hide())
 
   }
@@ -167,7 +169,7 @@
     }).finally(() =>  $q.loading.hide())
   }
 
-  function inActiveReferrer(data: ReferrerInterface): void {
+  function onActiveReferrer(data: ReferrerInterface): void {
     referrerActive.value = true
     referrerName.value = data.name
     referrerForm.value = {
@@ -210,7 +212,7 @@
       message: 'Creando codigo...'
     })
     const num = 6
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const characters = '0123456789';
     const charactersLength = characters.length;
     let result = '';
       for (let i = 0; i < num; i++) {
@@ -218,7 +220,6 @@
       }
     if (referrerForm.value.identity === '' || referrerForm.value.identity === null) return notify( 'Es necesario el numero de identificación', 'negative'), $q.loading.hide()
     inValidCode(referrerForm.value.identity as string, result).then((response) => {
-      console.log('object', response)
       referrerForm.value.code_referrer = response.data;
     }).catch((err) => {
       notify( err.message ? err.message : 'Revisar que la información este completa', 'negative')
@@ -282,7 +283,7 @@
             round
             icon="check_box"
             color="green"
-            @click="inActiveReferrer(props.row)"
+            @click="onActiveReferrer(props.row)"
           ></q-btn>
         </q-td>
       </template>
@@ -346,6 +347,7 @@
                 v-model="referrerForm.identity"
                 rounded
                 outlined
+                mask="############"
                 label="Identificación"
                 lazy-rules
                 :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar identificación']"
@@ -379,10 +381,9 @@
                 v-model="referrerForm.code_referrer"
                 rounded
                 outlined
+                mask="######"
                 label="Codigo Referencia"
                 :type="'text'"
-                lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor generar Código']"
               >
                 <template v-slot:append>
                   <q-icon

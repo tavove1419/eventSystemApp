@@ -15,7 +15,6 @@
 <template>
   <div id="fondo"></div>
   <q-layout  view="hHh lpR fFf" style="background:linear-gradient( 135deg, #74cfdb 10%, #02f892 100%)">
-
     <q-header class="bg-transparent text-white">
       <q-toolbar class="q-pa-md">
         <q-toolbar-title >
@@ -24,7 +23,7 @@
         <q-space/>
 
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn square dense flat color="text-grey-7" to="/" label="inicio" icon="dashboard">
+          <q-btn square dense flat color="text-grey-7" to="/" label="inicio" icon="house">
             <q-tooltip>Home</q-tooltip>
           </q-btn>
           <!-- <q-btn square dense flat color="text-grey-7" to="/sales" :disable="!ecommerceStore.isActiveEvente" label="Comprar" icon="shopping_cart">

@@ -11,8 +11,14 @@
       <q-carousel-slide :name="1" class="q-pa-none">
         <q-scroll-area class="fit">
           <q-card class="my-card">
-            <!-- <q-img src="src/assets/motos.jpg"></q-img> -->
-            <img src="../../../assets/moto.jpg"/>
+            <q-img src="../../../assets/moto.jpg">
+              <!-- <div class="absolute-bottom text-subtitle1 text-center">
+                <q-btn type="a" href="https://github.com/sponsors/mayank091193" size="lg"
+                     :style="'background:'+ theme_color +'; color: white'" label="Support Me"/>
+              </div> -->
+            </q-img>
+            <!-- <img src="../../../assets/moto.jpg"/> -->
+
           </q-card>
         </q-scroll-area>
       </q-carousel-slide>

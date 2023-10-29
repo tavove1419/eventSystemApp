@@ -5,6 +5,7 @@
   import { createCustomer, findCustommerIdentity, findOnePaymentCustomer, createPaymentDetail, createTicket, updatePaymentDetail, updateCustommer } from '../composables/useCustommerRegisterComposable'
   import { Custommer, PaymentDetailInterface, PlanInterface } from '../interfaces'
   import { useEcommerceStore } from '../store/ecommerce-store'
+  import { existCode } from 'src/modules/administration/composables'
 
   const $q = useQuasar()
   const router = useRouter()
@@ -31,6 +32,7 @@
     expiration_date: ''
   })
   const document = ref<string>('')
+  const codeReferrer = ref<string>('')
   const id_payment = ref<string>('')
   const _id = ref<string>('')
   const step = ref<number>(1)
@@ -61,8 +63,9 @@
     phone2: <string | null> null,
     city: <string | null> null,
     province: <string | null> null,
-    country: <string | null> null,
+    country: <string | null> ('Colombia'),
     checkbox: <boolean | null> true,
+    reference: <string | null> null
   })
 
   onMounted(() => {
@@ -90,6 +93,7 @@
       city: custommerForm.value.city as string,
       province: custommerForm.value.province as string,
       country: custommerForm.value.country as string,
+      reference: custommerForm.value.reference ? custommerForm.value.reference as string : '' ,
     }
 
     if(_id.value.length)
@@ -178,6 +182,8 @@
       event_name: ecommerceStore.activeEvent.name,
       event_date: '31/10/2023',
       id_event: ecommerceStore.activeEvent.id as  string,
+      code_referrer: custommerForm.value.reference,
+      price_sale: total.value.toString()
     }
     createTicket(ticket).then((response) => {
       notify(response.data.message, 'positive')
@@ -202,12 +208,29 @@
       $q.loading.hide()
       custommerForm.value = response.data
       custommerForm.value.checkbox = true
+      custommerForm.value.reference = ''
       _id.value = response.data.id
     }).catch(() => {
       onReset()
       $q.loading.hide()
-      step.value = 1
     })
+  }
+
+  function onBlurCode() {
+    codeReferrer.value = custommerForm.value.reference as string
+    $q.loading.show({
+      message: 'Validando...'
+    })
+    if (codeReferrer.value !== '' && codeReferrer.value !== null) {
+      existCode(codeReferrer.value).then((response) => {
+        custommerForm.value.reference = response.data.toString()
+      }).catch((error) => {
+        notify(error?.message ? error.message : 'Código de Referencia invalida', 'warning')
+        custommerForm.value.reference = ''
+        step.value = 1
+      }).finally(() => $q.loading.hide())
+    }
+    $q.loading.hide()
   }
 
   function notify(msg: string, type: string) {
@@ -231,7 +254,8 @@
       city: null,
       province: null,
       country: null,
-      checkbox: true
+      checkbox: true,
+      reference: null
     }
     _id.value = ''
   }
@@ -266,6 +290,11 @@
 
   function redirect(): void {
     router.push('/')
+  }
+
+  function isValidEmail(val: string) {
+    const emailPattern = /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
+    return emailPattern.test(val) || 'El correo no parece ser válido';
   }
 </script>
 
@@ -302,54 +331,70 @@
                   />
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.name" label="Nombres *"/>
+                  <q-input dense lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar nombres']" outlined class="full-width" v-model="custommerForm.name" label="Nombres *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.last_name" label="Apellidos *"/>
+                  <q-input dense outlined class="full-width"
+                    lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar apellidos']" v-model="custommerForm.last_name" label="Apellidos *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-input dense autogrow outlined v-model="custommerForm.email" class="full-width"
-                            label="Correo Electrónico *"/>
+                    lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar correo', isValidEmail]"
+                    label="Correo Electrónico *"
+                  />
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-input dense autogrow outlined v-model="custommerForm.address" class="full-width"
-                           label="Dirreción *"/>
+                    lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar dirección']" label="Dirreción *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"  v-model="custommerForm.phone" label="Telefono Principal (whatsapp) *"/>
+                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000" lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar telefono']" v-model="custommerForm.phone" label="Telefono Principal (whatsapp) *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"  v-model="custommerForm.phone2" label="Telefono Opcional"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.city" label="Ciudad *"/>
+                  <q-input dense outlined class="full-width" v-model="custommerForm.city" lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar ciudad']" label="Ciudad *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.province" label="Departamento"/>
+                  <q-input dense outlined class="full-width" lazy-rules
+                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar departamento']" v-model="custommerForm.province" label="Departamento *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.country" label="País *"/>
+                  <q-input dense outlined class="full-width" disable v-model="custommerForm.country" label="País *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
+                <q-item>
+                  <q-input dense autogrow outlined mask="######" v-model="custommerForm.reference" class="full-width"
+                           label="Código Referido" @blur="onBlurCode()"/>
+                </q-item>
+              </div>
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-checkbox dense outlined class="full-width" v-model="custommerForm.checkbox" label="usar esta información para los datos de pago"/>
                 </q-item>
@@ -371,29 +416,29 @@
           >
 
             <div class="row">
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-input dense outlined class="full-width" v-model="paymentDetailForm.card_name" label="Nombre de la tarjeta*"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-input dense outlined class="full-width" v-model="paymentDetailForm.card_number"
                            label="Número de Tarjeta *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense autogrow outlined v-model="paymentDetailForm.expiration_date" class="full-width"
+                  <q-input dense autogrow outlined v-model="paymentDetailForm.expiration_date" class="full-width" mask="##/##"
                            label="Fecha Vencimiento *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
-                  <q-input dense autogrow outlined v-model="paymentDetailForm.cvv" class="full-width" label="CVV *"/>
+                  <q-input dense autogrow outlined v-model="paymentDetailForm.cvv" mask="###" class="full-width" label="CVV *"/>
                 </q-item>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <q-item>
                   <q-checkbox dense outlined class="full-width" v-model="paymentDetailForm.checkbox"
                               label="Recuerde los datos de la tarjeta de crédito para la próxima vez"/>

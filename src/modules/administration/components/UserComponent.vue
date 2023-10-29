@@ -2,15 +2,17 @@
   import {ref, onMounted} from 'vue'
   import { QTableProps, useQuasar } from 'quasar'
   import { UserInterface } from '../interfaces';
-  import { getAllUser, createUser, updateUser } from '../composables';
+  import { getAllUser, createUser, updateUser, activeUser, inactiveUser } from '../composables';
+  import Crypto from 'src/share/crypto-library/crypto'
 
-
+  const crypto = new Crypto()
   const $q = useQuasar()
   const filter = ''
   const isPwd = ref(true)
   const userCreate = ref<boolean>(false)
   const userEdit = ref<boolean>(false)
   const userDelete = ref<boolean>(false)
+  const userActive = ref<boolean>(false)
   const userName = ref<string>('')
   const userList = ref<UserInterface[]>([])
   const userForm = ref({
@@ -75,7 +77,7 @@
   const roles = [
   'Administrador',
   'Auxiliar',
-];
+  ];
 
   onMounted(() => {
     gellAllUser()
@@ -87,6 +89,7 @@
     })
     getAllUser().then((response) => {
       userList.value = response.data
+      userList.value = userList.value.filter((data) => data.rol !== 'Referenciador')
       $q.loading.hide()
     }).catch(() => {
       notify('Error al carga los usuarios', 'negative')
@@ -105,8 +108,8 @@
     })
     userForm.value.status = true
     createUser(userForm.value as UserInterface).then((response) => {
-      response.data
-      notify('Usuario creado con exito!', 'positive')
+      const data = crypto.decryptObject(response.data.data)
+      notify(`Usuario ${data.name} ${data.last_name} creado con exito!`, 'positive')
       gellAllUser()
     }).catch(() => {
       notify('Revisar que la información este completa', 'negative')
@@ -134,7 +137,7 @@
       message: 'Actualizando usuario...'
     })
     updateUser(userForm.value.id as string, userForm.value as UserInterface).then((response) => {
-      const data = response.data
+      const data = crypto.decryptObject(response.data.data)
       notify(`El usuario ${data.name} ${data.last_name} actualizado con exito!`, 'positive')
       gellAllUser()
     }).catch(() => {
@@ -162,15 +165,42 @@
     $q.loading.show({
       message: 'inactivando usuario...'
     })
-    // anactiveUser(userForm.value.id as string, planForm.value as PlansInterface).then((response) => {
-    //   const data = response.data
-    //   notify(`El plan ${data.name} inactivado con exito!`, 'positive')
-    //   $q.loading.hide()
-    //   gellAllEvent()
-    // }).catch(() => {
-    //   notify('Revisar que la información este completa', 'negative')
-    //   $q.loading.hide()
-    // })
+    inactiveUser(userForm.value.id as string, userForm.value as UserInterface).then((response) => {
+      const data = crypto.decryptObject(response.data.data)
+      notify(`El suario ${data.name} ${data.last_name} inactivado con exito!`, 'positive')
+      gellAllUser()
+    }).catch(() => {
+      notify('Revisar que la información este completa', 'negative')
+    }).finally(() => $q.loading.hide())
+  }
+
+  function onActiveUser(data: UserInterface): void {
+    userActive.value = true
+    userName.value = `${data.name} ${data.last_name}`
+    userForm.value = {
+      id: data.id as string,
+      name: data.name,
+      last_name: data.last_name,
+      password: data.password as string,
+      phone: data.phone as string,
+      address: data.address,
+      email: data.email,
+      rol: data.rol,
+      status: true
+    }
+  }
+
+  function onActive(): void {
+    $q.loading.show({
+      message: 'Activando usuario...'
+    })
+    activeUser(userForm.value.id as string, userForm.value as UserInterface).then((response) => {
+      const data = crypto.decryptObject(response.data.data)
+      notify(`El usuario ${data.name} ${data.last_name} activado con exito!`, 'positive')
+      gellAllUser()
+    }).catch((err) => {
+      notify( err.message ? err.message : 'Revisar que la información este completa', 'negative')
+    }).finally(() => $q.loading.hide())
   }
 
   function notify(msg: string, type: string) {
@@ -238,6 +268,15 @@
             color="red"
             @click="deleteUser(props.row)"
           ></q-btn>
+          <q-btn
+            :disable="props.row.status"
+            dense
+            flat
+            round
+            icon="check_box"
+            color="green"
+            @click="onActiveUser(props.row)"
+          ></q-btn>
         </q-td>
       </template>
 
@@ -302,7 +341,7 @@
                 outlined
                 label="Email"
                 lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el precio del email', isValidEmail]"
+                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el email', isValidEmail]"
               />
               <q-input
                 v-model="userForm.password"
@@ -311,7 +350,7 @@
                 label="Contraseña"
                 :type="isPwd ? 'password' : 'text'"
                 lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el precio del email', isValidPassword]"
+                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar la contraseña', isValidPassword]"
               >
                 <template v-slot:append>
                   <q-icon
@@ -422,7 +461,7 @@
                 outlined
                 label="Email"
                 lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el precio del email', isValidEmail]"
+                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el email', isValidEmail]"
               />
             </div>
             <div class="col-12">
@@ -433,7 +472,7 @@
                 label="Contraseña"
                 :type="isPwd ? 'password' : 'text'"
                 lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el precio del email', isValidPassword]"
+                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar la contraseña', isValidPassword]"
               >
                 <template v-slot:append>
                   <q-icon
@@ -454,16 +493,6 @@
                 hint="Eje: (300) 000 - 0000"
                 lazy-rules
                 :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar el numero telefonico']"
-              />
-            </div>
-            <div class="col-12">
-              <q-input
-                v-model="userForm.address"
-                rounded
-                outlined
-                label="Dirección"
-                lazy-rules
-                :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar dirección']"
               />
             </div>
             <div class="col-12">
@@ -525,6 +554,22 @@
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" color="negative" v-close-popup />
           <q-btn flat label="Eliminar" @click="onDelete()" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
+
+  <div class="q-pa-md q-gutter-sm">
+    <q-dialog v-model="userActive" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="check_circle" color="positive" text-color="white" />
+          <span class="q-ml-sm">Desea activar el referenciadpr: <strong> {{ userName }} </strong> ?</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="negative" v-close-popup />
+          <q-btn flat label="Activar" @click="onActive()" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>

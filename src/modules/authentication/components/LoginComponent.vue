@@ -22,7 +22,10 @@
       email: loginForm.value.email as string,
       password: loginForm.value.password as string
     }
-    authentication(credentials).then(({data}) => {store.successLogin(data), router.push({path: '/dashboard'})})
+    authentication(credentials).then(({data}) => {
+      store.successLogin(data),
+      router.push({path: '/dashboard'})
+    })
     .catch((er) => {
       $q.notify({
         type: 'negative',

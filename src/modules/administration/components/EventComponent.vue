@@ -13,10 +13,14 @@
   const eventActive = ref<boolean>(false)
   const eventName = ref<string>('')
   const eventList = ref<EventInterface[]>([])
+  const disabledBtn = ref<boolean>(true)
+  let rawImg
+  const image = ref()
   const eventForm = ref({
     id: <string | null> null,
     name: <string | null> null,
     description: <string | null> null,
+    img: <string | null> null,
     status: <boolean | null> null
   })
   const columns: QTableProps['columns'] = [
@@ -29,12 +33,12 @@
       field: 'name'
     },
     {
-      name: 'description',
+      name: 'img',
       required: true,
-      label: 'Descripción evento',
+      label: 'Imagen evento',
       align: 'left',
       sortable: true,
-      field: 'description'
+      field: 'img'
     },
     {
       name: 'status',
@@ -74,7 +78,7 @@
     onReset()
   }
 
-  function onEventSave(): void {
+  function onEventSave() {
     $q.loading.show({
       message: 'Creando evento...'
     })
@@ -89,12 +93,34 @@
 
   }
 
+  function imageB64(img: File): void {
+    $q.loading.show({
+      message: 'Cargando imagen espere por favor...',
+    })
+    try {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        rawImg = reader.result
+        eventForm.value.img = rawImg as string
+        disabledBtn.value = false
+        $q.loading.hide()
+      }
+      reader.readAsDataURL(img)
+    } catch (error) {
+      disabledBtn.value = true
+      $q.loading.hide()
+    }
+
+  }
+
   function editEvent(data: EventInterface) {
     eventEdit.value = true
+    data.img ? disabledBtn.value = false : disabledBtn.value = true
     eventForm.value = {
       id: data.id as string,
       name: data.name,
       description: data.description,
+      img: data?.img ? data?.img as string : '',
       status: data.status ? true : false
     }
   }
@@ -121,6 +147,7 @@
       id: data.id as string,
       name: data.name,
       description: data.description,
+      img: data?.img ? data?.img as string : '',
       status: false
     }
   }
@@ -132,6 +159,7 @@
       id: data.id as string,
       name: data.name,
       description: data.description,
+      img: data?.img ? data?.img as string : '',
       status: true
     }
   }
@@ -180,9 +208,11 @@
       id: null,
       name: null,
       description: null,
+      img: null,
       status: true
     }
   }
+
 </script>
 <template>
   <div class="q-pa-md">
@@ -223,6 +253,12 @@
             color="green"
             @click="activeEvent(props.row)"
           ></q-btn>
+        </q-td>
+      </template>
+
+     <template #body-cell-img="props">
+        <q-td top-center style="height: 100px;">
+          <img class="sizeImg" v-bind:src="props.row.img" />
         </q-td>
       </template>
 
@@ -282,10 +318,20 @@
                 lazy-rules
                 :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar descripcion']"
               />
-              <q-uploader
-                url="http://localhost:4444/upload"
-                style="max-width: 300px"
-              />
+              <q-file
+                v-model="image"
+                label="Imagen evento"
+                flat
+                clearable
+                accept=".jpeg,.jpg,.png"
+                max-file-size="5120000"
+                max-files="1"
+                @update:model-value="() => imageB64(image)"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
               <q-checkbox
                 v-model="eventForm.status"
                 label="Activo"
@@ -308,6 +354,7 @@
                 label="Guardar"
                 outline
                 rounded
+                :disable="disabledBtn"
                 color="primary"
                 @click="onEventSave()"
                 v-close-popup
@@ -352,6 +399,22 @@
                 :rules="[(val: []) => val && val.length > 0 || 'Favor ingresar descripción']"
               />
             </div>
+            <div class="col-12">
+              <q-file
+                v-model="image"
+                label="Imagen evento"
+                flat
+                clearable
+                accept=".jpeg,.jpg,.png"
+                max-file-size="5120000"
+                max-files="1"
+                @update:model-value="() => imageB64(image)"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
+            </div>
             <div class="col-12 text-right q-gutter-sm">
               <q-btn
                 label="Cancelar"
@@ -362,6 +425,7 @@
               >
               </q-btn>
               <q-btn
+                :disable="disabledBtn"
                 label="Actualizar"
                 outline
                 rounded
@@ -409,6 +473,10 @@
     </q-dialog>
   </div>
 </template>
-<style scoped>
-
+<style scoped lang="scss">
+  .sizeImg {
+    width: 50%;
+    height: 100%;
+    object-fit: fill;
+  }
 </style>

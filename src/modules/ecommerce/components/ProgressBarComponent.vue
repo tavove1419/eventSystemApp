@@ -18,11 +18,11 @@
   <div id="q-app">
     <div class="q-pa-md q-gutter-sm">
     <q-banner inline-actions rounded class="bg-positive text-white text-center">
-        SIGUE EL PROGRESO DE TICKETS, NO ESPERES A ÚLTIMO MOMENTO Y ADQUIERE LOS TUYOS PRONTO ANTES DE QUE SE AGOTEN!!!!
+      <span class="text-h4">ADQUIERES TUS ENTRADAS ANTES DE QUE SE AGOTEN</span>
       <div class="q-pa-md">
-        <q-linear-progress size="40px" :value="progress" color="white" class="q-mt-sm">
+        <q-linear-progress size="55px" :value="progress" color="white" class="q-mt-md">
           <div class="absolute-full flex flex-center">
-            <q-badge color="warning" text-color="black" :label="progressLabel" />
+            <q-badge color="warning" text-color="black" class="text-bold text-h5" :label="`${progressLabel} Vendidas`" />
           </div>
         </q-linear-progress>
       </div>

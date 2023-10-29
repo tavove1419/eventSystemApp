@@ -5,7 +5,7 @@
 </script>
 
 <template>
-  <q-page-container>
+  <q-page-container style="padding-top: 0px;">
     <section style="min-height: 25vh;" class="flex text-white flex-center layout_bg">
       <div style="position: relative">
         <div class="text-h4 text-center">
