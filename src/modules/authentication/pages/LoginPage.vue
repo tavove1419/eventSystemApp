@@ -7,28 +7,26 @@
 
 <template>
   <q-page class="flex bg-image flex-center">
-        <q-card v-bind:style="$q.screen.lt.sm?{'width': '80%'}:{'width':'30%'}">
-          <q-card-section>
-            <q-avatar size="103px" class="absolute-center shadow-10">
-              <img src="src/assets/profile.svg">
-            </q-avatar>
-          </q-card-section>
-          <q-card-section>
-            <div class="text-center q-pt-lg">
-              <div class="col text-h6 ellipsis">
-                Inicio Sesión
-              </div>
-            </div>
-          </q-card-section>
-          <q-card-section>
-            <LoginComponent></LoginComponent>
-          </q-card-section>
-        </q-card>
-      </q-page>
+    <LoginComponent></LoginComponent>
+  </q-page>
 </template>
 
 <style scoped lang="scss">
+  $black:  #09090c;
+  $dark:   #111318;
+  $card:   #16181f;
+  $border: rgba(255,255,255,.08);
+  $bdr2:   rgba(255,255,255,.14);
+  $orange: #FF6B35;
+  $red:    #E63946;
+  $amber:  #FF9F1C;
+  $tp:     #F2F2F5;
+  $tm:     #888A99;
   .bg-image {
-    background-image: linear-gradient(135deg, #7028e4 0%, #e5b2ca 100%);
+    background:
+    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(255,107,53,.1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(230,57,70,.08) 0%, transparent 60%),
+    $black;
   }
 </style>
+

@@ -1,27 +1,26 @@
-FROM node:18-bullseye-slim AS Builder
+# Base image for Node.js
+FROM node:18-alpine
 
-RUN mkdir /app
-
+# Set the working directory inside the container
 WORKDIR /app
 
-RUN npm install -g @quasar/cli
+# Copy package.json and package-lock.json to install dependencies
+COPY package*.json ./
 
-COPY package.json ./
+# Install dependencies
+RUN npm install
 
-RUN npm i
-
+# Copy the rest of the project files into the container
 COPY . .
 
-CMD ["quasar", "dev"]
+# Build the Quasar project
+RUN npm run build
 
-FROM builder AS dev-envs
+# Expose port 443 for HTTPS
+EXPOSE 9050
 
-RUN apt-get update && apt-get install -y --no-install-recommends git
+# Instalar un servidor estático para servir la aplicación
+RUN npm install -g http-server
 
-RUN useradd -s /bin/bash -m vscode && groupadd docker && usermod -aG docker vscode
-
-# install Docker tools (cli, buildx, compose)
-
-COPY --from=gloursdocker/docker / /
-
-CMD ["quasar", "dev"]
+# Command to run the Quasar project with SSL
+CMD ["http-server", "dist/spa", "-p", "9050", "--ssl", "--cert", "/app/ssl/fullchain.pem", "--key", "/app/ssl/privkey.pem"]

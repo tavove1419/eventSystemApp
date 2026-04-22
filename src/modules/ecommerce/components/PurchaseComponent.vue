@@ -299,240 +299,766 @@
 </script>
 
 <template>
-  <q-page class="q-pa-sm bg-white">
-    <div class="row q-col-gutter-sm">
-      <div class="col-lg-7 col-md-7 col-sm-12 col-xs-12">
-        <q-stepper
-          v-model="step"
-          header-nav
-          ref="stepper"
-          color="primary"
-          animated
-        >
-          <q-step
-            :name="1"
-            title="Datos de compra"
-            icon="shopping_cart"
-            :done="step > 1"
-            :header-nav="step > 1"
+  <div class="pc-root">
+    <div class="pc-layout">
+
+      <!-- ════════════════════════════════════════
+           COLUMNA IZQUIERDA — Stepper de formulario
+           ════════════════════════════════════════ -->
+      <div class="pc-form-col">
+
+        <!-- Stepper visual custom -->
+        <div class="pc-steps">
+          <div
+            v-for="(s, i) in [
+              { label: 'Datos personales', icon: 'person' },
+              { label: 'Detalle de pago',  icon: 'credit_card' },
+              { label: 'Confirmar compra', icon: 'check_circle' }
+            ]"
+            :key="i"
+            class="pc-step"
+            :class="{
+              'pc-step--active': step === i + 1,
+              'pc-step--done':   step > i + 1
+            }"
           >
-            <div class="row">
-              <div class="col-12">
-                <q-item>
-                  <q-input
-                    dense
-                    outlined
-                    class="full-width"
-                    v-model="custommerForm.identity"
-                    label="Numero Documento *"
-                    lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar numero de documento']"
-                    @blur="onBlur()"
-                  />
-                </q-item>
+            <div class="pc-step__circle">
+              <q-icon v-if="step > i + 1" name="check" size="16px" />
+              <q-icon v-else :name="s.icon" size="16px" />
+            </div>
+            <span class="pc-step__label">{{ s.label }}</span>
+            <div v-if="i < 2" class="pc-step__line" />
+          </div>
+        </div>
+
+        <!-- ── PASO 1: Datos personales ─────────── -->
+        <transition name="step-fade" mode="out-in">
+          <div v-if="step === 1" key="step1" class="pc-panel">
+            <div class="pc-panel__header">
+              <div class="pc-panel__icon-wrap">
+                <q-icon name="person" size="20px" />
               </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar nombres']" outlined class="full-width" v-model="custommerForm.name" label="Nombres *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width"
-                    lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar apellidos']" v-model="custommerForm.last_name" label="Apellidos *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense autogrow outlined v-model="custommerForm.email" class="full-width"
-                    lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar correo', isValidEmail]"
-                    label="Correo Electrónico *"
-                  />
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense autogrow outlined v-model="custommerForm.address" class="full-width"
-                    lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar dirección']" label="Dirreción *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000" lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar telefono']" v-model="custommerForm.phone" label="Telefono Principal (whatsapp) *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"  v-model="custommerForm.phone2" label="Telefono Opcional"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" v-model="custommerForm.city" lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar ciudad']" label="Ciudad *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" lazy-rules
-                    :rules="[(val: []) => val && val.length > 0 || 'Ingresar departamento']" v-model="custommerForm.province" label="Departamento *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" disable v-model="custommerForm.country" label="País *"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense autogrow outlined mask="######" v-model="custommerForm.reference" class="full-width"
-                           label="Código Referido" @blur="onBlurCode()"/>
-                </q-item>
-              </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-checkbox dense outlined class="full-width" v-model="custommerForm.checkbox" label="usar esta información para los datos de pago"/>
-                </q-item>
+              <div>
+                <h2 class="pc-panel__title">Datos personales</h2>
+                <p class="pc-panel__sub">Ingresa tu información para registrar la compra</p>
               </div>
             </div>
 
-            <q-stepper-navigation>
-              <q-btn rounded @click="onSubmit()" class="float-right q-mr-md q-mb-md" color="blue"
-                     label="Siguiente"/>
-            </q-stepper-navigation>
-          </q-step>
+            <div class="pc-form-grid">
+              <!-- Documento (full width) -->
+              <div class="pc-field pc-field--full">
+                <q-input
+                  dark dense outlined color="orange"
+                  v-model="custommerForm.identity"
+                  label="Número de Documento *"
+                  lazy-rules
+                  :rules="[(val: []) => val && val.length > 0 || 'Ingresar número de documento']"
+                  @blur="onBlur()"
+                  class="pc-input"
+                >
+                  <template #prepend><q-icon name="badge" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
 
-          <q-step
-            :name="2"
-            title="Detalles Pago"
-            icon="shopping_cart"
-            :done="step > 2"
-            :header-nav="step > 2"
-          >
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar nombres']"
+                  v-model="custommerForm.name" label="Nombres *" class="pc-input">
+                  <template #prepend><q-icon name="person" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
 
-            <div class="row">
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" v-model="paymentDetailForm.card_name" label="Nombre de la tarjeta*"/>
-                </q-item>
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar apellidos']"
+                  v-model="custommerForm.last_name" label="Apellidos *" class="pc-input">
+                  <template #prepend><q-icon name="person_outline" color="orange" size="18px"/></template>
+                </q-input>
               </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense outlined class="full-width" v-model="paymentDetailForm.card_number"
-                           label="Número de Tarjeta *"/>
-                </q-item>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar correo', isValidEmail]"
+                  v-model="custommerForm.email" label="Correo Electrónico *" class="pc-input">
+                  <template #prepend><q-icon name="email" color="orange" size="18px"/></template>
+                </q-input>
               </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense autogrow outlined v-model="paymentDetailForm.expiration_date" class="full-width" mask="##/##"
-                           label="Fecha Vencimiento *"/>
-                </q-item>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar dirección']"
+                  v-model="custommerForm.address" label="Dirección *" class="pc-input">
+                  <template #prepend><q-icon name="home" color="orange" size="18px"/></template>
+                </q-input>
               </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-input dense autogrow outlined v-model="paymentDetailForm.cvv" mask="###" class="full-width" label="CVV *"/>
-                </q-item>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar teléfono']"
+                  v-model="custommerForm.phone" label="Teléfono Principal (WhatsApp) *" class="pc-input">
+                  <template #prepend><q-icon name="whatsapp" color="orange" size="18px"/></template>
+                </q-input>
               </div>
-              <div class="col-12 col-md-6">
-                <q-item>
-                  <q-checkbox dense outlined class="full-width" v-model="paymentDetailForm.checkbox"
-                              label="Recuerde los datos de la tarjeta de crédito para la próxima vez"/>
-                </q-item>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  mask="(###) ### - ####" hint="Eje: (300) 000 - 0000"
+                  v-model="custommerForm.phone2" label="Teléfono Opcional" class="pc-input">
+                  <template #prepend><q-icon name="phone" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar ciudad']"
+                  v-model="custommerForm.city" label="Ciudad *" class="pc-input">
+                  <template #prepend><q-icon name="location_city" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  lazy-rules :rules="[(val: []) => val && val.length > 0 || 'Ingresar departamento']"
+                  v-model="custommerForm.province" label="Departamento *" class="pc-input">
+                  <template #prepend><q-icon name="map" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  v-model="custommerForm.country" label="País *" class="pc-input">
+                  <template #prepend><q-icon name="public" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  mask="######" v-model="custommerForm.reference"
+                  label="Código Referido" @blur="onBlurCode()" class="pc-input">
+                  <template #prepend><q-icon name="card_giftcard" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+
+              <div class="pc-field pc-field--full">
+                <q-checkbox
+                  dark dense
+                  v-model="custommerForm.checkbox"
+                  color="orange"
+                  label="Usar esta información para los datos de pago"
+                  class="pc-checkbox"
+                />
               </div>
             </div>
 
-            <q-stepper-navigation>
-              <q-btn rounded @click="onPaymentDetail()" class="float-right q-mr-md q-mb-md" color="blue"
-                     label="Siguiente"/>
-              <q-btn flat @click="step = 1" color="primary" rounded label="Regresar" class="q-mr-sm float-right"/>
-            </q-stepper-navigation>
-          </q-step>
-
-          <q-step
-            :name="3"
-            title="Revise su compra"
-            icon="shopping_cart"
-            :header-nav="step > 3"
-          >
-            <div class="row">
-              <q-item-label header class="text-h6">Resumen de la Compra</q-item-label>
-              <div class="col-12" v-for="plan in planBuy" :key="plan.name">
-                <q-item class="full-width">
-                  <q-item-section>
-                    <q-item-label class="text-uppercase" lines="1">{{ plan?.name }}</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    ${{ plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1) }}
-                  </q-item-section>
-                </q-item>
-              </div>
-              <q-separator></q-separator>
-              <q-item class="full-width" style="border-top: 3px dotted blue">
-                <q-item-section>
-                  <q-item-label class="text-uppercase" lines="1">Total</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  ${{ total }}
-                </q-item-section>
-              </q-item>
+            <div class="pc-panel__actions">
+              <button class="pc-btn pc-btn--primary" @click="onSubmit()">
+                <span>Siguiente</span>
+                <q-icon name="arrow_forward" size="18px" />
+              </button>
             </div>
-            <q-stepper-navigation>
-            <q-btn rounded @click="done3 = true, onBuy()" class="float-right q-mr-md q-mb-md" color="blue" label="Realizar Compra"/>
-            <q-btn flat @click="step = 2" color="primary" rounded label="Regresar" class="q-mr-sm float-right"/>
-            </q-stepper-navigation>
-          </q-step>
-        </q-stepper>
+          </div>
+        </transition>
+
+        <!-- ── PASO 2: Detalle de Pago ──────────── -->
+        <transition name="step-fade" mode="out-in">
+          <div v-if="step === 2" key="step2" class="pc-panel">
+            <div class="pc-panel__header">
+              <div class="pc-panel__icon-wrap pc-panel__icon-wrap--red">
+                <q-icon name="credit_card" size="20px" />
+              </div>
+              <div>
+                <h2 class="pc-panel__title">Detalle de pago</h2>
+                <p class="pc-panel__sub">Ingresa los datos de tu tarjeta de forma segura</p>
+              </div>
+            </div>
+
+            <!-- Card preview -->
+            <div class="card-preview">
+              <div class="card-preview__chip">
+                <q-icon name="credit_card" size="22px" />
+              </div>
+              <div class="card-preview__number">
+                {{ paymentDetailForm.card_number
+                  ? paymentDetailForm.card_number.replace(/(.{4})/g, '$1 ').trim()
+                  : '•••• •••• •••• ••••' }}
+              </div>
+              <div class="card-preview__bottom">
+                <div>
+                  <span class="card-preview__micro">Titular</span>
+                  <span class="card-preview__val">{{ paymentDetailForm.card_name || '— — — —' }}</span>
+                </div>
+                <div>
+                  <span class="card-preview__micro">Vence</span>
+                  <span class="card-preview__val">{{ paymentDetailForm.expiration_date || 'MM/AA' }}</span>
+                </div>
+                <div>
+                  <span class="card-preview__micro">CVV</span>
+                  <span class="card-preview__val">{{ paymentDetailForm.cvv ? '•••' : '•••' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pc-form-grid">
+              <div class="pc-field pc-field--full">
+                <q-input dark dense outlined color="orange"
+                  v-model="paymentDetailForm.card_name" label="Nombre en la Tarjeta *" class="pc-input">
+                  <template #prepend><q-icon name="person" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+              <div class="pc-field pc-field--full">
+                <q-input dark dense outlined color="orange"
+                  v-model="paymentDetailForm.card_number" label="Número de Tarjeta *" class="pc-input">
+                  <template #prepend><q-icon name="credit_card" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  v-model="paymentDetailForm.expiration_date" mask="##/##"
+                  label="Fecha de Vencimiento *" class="pc-input">
+                  <template #prepend><q-icon name="calendar_today" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+              <div class="pc-field">
+                <q-input dark dense outlined color="orange"
+                  v-model="paymentDetailForm.cvv" mask="###"
+                  label="CVV *" class="pc-input">
+                  <template #prepend><q-icon name="lock" color="orange" size="18px"/></template>
+                </q-input>
+              </div>
+              <div class="pc-field pc-field--full">
+                <q-checkbox dark dense v-model="paymentDetailForm.checkbox" color="orange"
+                  label="Recordar datos de tarjeta para la próxima vez" class="pc-checkbox" />
+              </div>
+            </div>
+
+            <div class="pc-panel__actions">
+              <button class="pc-btn pc-btn--ghost" @click="step = 1">
+                <q-icon name="arrow_back" size="18px" />
+                <span>Regresar</span>
+              </button>
+              <button class="pc-btn pc-btn--primary" @click="onPaymentDetail()">
+                <span>Siguiente</span>
+                <q-icon name="arrow_forward" size="18px" />
+              </button>
+            </div>
+          </div>
+        </transition>
+
+        <!-- ── PASO 3: Confirmación ─────────────── -->
+        <transition name="step-fade" mode="out-in">
+          <div v-if="step === 3" key="step3" class="pc-panel">
+            <div class="pc-panel__header">
+              <div class="pc-panel__icon-wrap pc-panel__icon-wrap--green">
+                <q-icon name="check_circle" size="20px" />
+              </div>
+              <div>
+                <h2 class="pc-panel__title">Confirmar compra</h2>
+                <p class="pc-panel__sub">Revisa los detalles antes de finalizar</p>
+              </div>
+            </div>
+
+            <div class="confirm-list">
+              <div
+                v-for="plan in planBuy"
+                :key="plan.name"
+                class="confirm-item"
+              >
+                <div class="confirm-item__left">
+                  <div class="confirm-item__dot" />
+                  <div class="confirm-item__info">
+                    <span class="confirm-item__name">{{ plan?.name }}</span>
+                    <span class="confirm-item__meta">
+                      {{ plan?.quantity_sale }} unidad(es) · {{ plan?.quantity_number }} entradas c/u
+                    </span>
+                  </div>
+                </div>
+                <span class="confirm-item__price">
+                  $ {{ (plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1)).toLocaleString('es-CO') }}
+                </span>
+              </div>
+            </div>
+
+            <div class="confirm-total">
+              <span class="confirm-total__label">Total a pagar</span>
+              <span class="confirm-total__value">$ {{ total.toLocaleString('es-CO') }}</span>
+            </div>
+
+            <div class="pc-panel__actions">
+              <button class="pc-btn pc-btn--ghost" @click="step = 2">
+                <q-icon name="arrow_back" size="18px" />
+                <span>Regresar</span>
+              </button>
+              <button class="pc-btn pc-btn--fire" @click="done3 = true, onBuy()">
+                <q-icon name="local_fire_department" size="18px" />
+                <span>Realizar Compra</span>
+                <q-icon name="send" size="16px" style="margin-left:auto" />
+              </button>
+            </div>
+          </div>
+        </transition>
+
       </div>
-      <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
-        <q-card class="bg-grey-2" >
-          <q-card-section class="text-center text-h6 text-black ">
-            <q-icon name="shopping_cart" class="q-mr-sm"/>
-            Resumen de la Compra
-          </q-card-section>
-          <q-card-section horizontal v-for="plan in planBuy" :key="plan.name">
-            <q-card-section class="col-5 flex flex-center">
-              <q-img
 
-                sizes="(max-width: 400px) 400w,
-                (min-width: 400px) and (max-width: 800px) 800w,
-                (min-width: 800px) and (max-width: 1200px) 1200w,
-                (min-width: 1200px) 1600w"
-                class="rounded-borders img-pequeña"
-                src="../../../assets/buy.png"
-              />
-            </q-card-section>
-            <q-card-section class="">
-              <div class="text-subtitle2 q-mt-sm text-uppercase">{{ plan?.name }}</div>
-              <div class="text-subtitle2  q-mb-xs"><q-icon color="green" name="currency_exchange" /> {{ plan?.price }}</div>
-              <div class="text-subtitle2  q-mb-xs">Cantidad <q-icon color="green" name="shopping_cart" /> {{ plan?.quantity_sale }}</div>
-              <div class="text-subtitle2  q-mb-xs">Subtotal <q-icon color="green" name="currency_exchange" /> {{ plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1) }}</div>
-            </q-card-section>
-          </q-card-section>
-          <q-separator></q-separator>
-          <q-card-section class="row">
-            <div class="  col-12 text-h6 full-width">
-              <div class="float-right q-mr-md">
-                Total : <span class="text-blue">$ {{ total }}</span>
+      <!-- ════════════════════════════════════════
+           COLUMNA DERECHA — Resumen lateral
+           ════════════════════════════════════════ -->
+      <div class="pc-summary-col">
+        <div class="pc-summary">
+
+          <div class="pc-summary__header">
+            <q-icon name="shopping_bag" size="20px" class="pc-summary__icon" />
+            <span>Resumen de la Compra</span>
+          </div>
+
+          <div class="pc-summary__items">
+            <div
+              v-for="(plan) in planBuy"
+              :key="plan.name"
+              class="pc-summary__item"
+            >
+              <div class="pc-summary__item-img">
+                <q-img
+                  src="../../../assets/buy.png"
+                  fit="cover"
+                  class="pc-summary__img"
+                />
+                <div class="pc-summary__item-badge">
+                  {{ plan?.quantity_sale }}×
+                </div>
               </div>
+              <div class="pc-summary__item-info">
+                <span class="pc-summary__item-name">{{ plan?.name }}</span>
+                <span class="pc-summary__item-entries">
+                  <q-icon name="confirmation_number" size="12px" />
+                  {{ plan?.quantity_number }} entradas
+                </span>
+                <span class="pc-summary__item-price">
+                  $ {{ plan?.price.toLocaleString('es-CO') }} / unidad
+                </span>
+              </div>
+              <span class="pc-summary__item-sub">
+                $ {{ (plan?.price * (plan?.quantity_sale ? plan?.quantity_sale : 1)).toLocaleString('es-CO') }}
+              </span>
             </div>
-          </q-card-section>
+          </div>
 
-        </q-card>
+          <div class="pc-summary__divider" />
+
+          <!-- Entradas totales -->
+          <div class="pc-summary__stat">
+            <div class="pc-summary__stat-item">
+              <q-icon name="confirmation_number" size="16px" color="orange" />
+              <span>Entradas totales</span>
+              <strong>{{ number_total }}</strong>
+            </div>
+          </div>
+
+          <div class="pc-summary__divider" />
+
+          <div class="pc-summary__total">
+            <span>Total</span>
+            <span class="pc-summary__total-val">$ {{ total.toLocaleString('es-CO') }}</span>
+          </div>
+
+          <!-- Seguridad -->
+          <div class="pc-summary__secure">
+            <q-icon name="lock" size="13px" />
+            <span>Pago cifrado y seguro</span>
+          </div>
+        </div>
       </div>
+
     </div>
-
-  </q-page>
+  </div>
 </template>
 
+<style scoped lang="scss">
+/* ── Tokens ──────────────────────────────────────────── */
+$black:   #09090c;
+$dark:    #111318;
+$card:    #16181f;
+$card2:   #1c1e28;
+$border:  rgba(255,255,255,.07);
+$border2: rgba(255,255,255,.13);
+$orange:  #FF6B35;
+$red:     #E63946;
+$amber:   #FF9F1C;
+$green:   #4ade80;
+$tp:      #F2F2F5;
+$tm:      #888A99;
+$rlg:     14px;
+$rxl:     20px;
 
-<style scoped>
-  .img-pequeña{
-    width: 100px;
-    height: 100px;
+/* ── Root & Layout ───────────────────────────────────── */
+.pc-root {
+  background: $black;
+  min-height: 100vh;
+  padding: 32px 24px 80px;
+}
+
+.pc-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
   }
+}
+
+/* ── Custom Stepper ──────────────────────────────────── */
+.pc-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 28px;
+}
+
+.pc-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  flex: 1;
+
+  &__circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+    border: 2px solid $border2;
+    display: flex; align-items: center; justify-content: center;
+    color: $tm; font-weight: 700; font-size: .85rem;
+    transition: background .3s, border-color .3s, color .3s;
+    z-index: 1;
+  }
+
+  &__label {
+    font-size: .7rem; font-weight: 700;
+    color: $tm; text-align: center;
+    transition: color .3s;
+    white-space: nowrap;
+  }
+
+  &__line {
+    position: absolute;
+    top: 17px; left: calc(50% + 18px);
+    width: calc(100% - 36px);
+    height: 2px;
+    background: $border2;
+    z-index: 0;
+  }
+
+  /* Active */
+  &--active {
+    .pc-step__circle {
+      background: rgba(255,107,53,.15);
+      border-color: $orange;
+      color: $orange;
+      box-shadow: 0 0 16px rgba(255,107,53,.3);
+    }
+    .pc-step__label { color: $orange; }
+  }
+
+  /* Done */
+  &--done {
+    .pc-step__circle {
+      background: rgba(74,222,128,.12);
+      border-color: $green;
+      color: $green;
+    }
+    .pc-step__label { color: $green; }
+    .pc-step__line { background: $green; }
+  }
+}
+
+/* ── Panel (formulario por paso) ─────────────────────── */
+.pc-panel {
+  background: $dark;
+  border: 1px solid $border;
+  border-radius: $rxl;
+  padding: 28px;
+
+  &__header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  &__icon-wrap {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,107,53,.12);
+    border: 1px solid rgba(255,107,53,.25);
+    display: flex; align-items: center; justify-content: center;
+    color: $orange; flex-shrink: 0;
+
+    &--red {
+      background: rgba(230,57,70,.1);
+      border-color: rgba(230,57,70,.25);
+      color: $red;
+    }
+    &--green {
+      background: rgba(74,222,128,.1);
+      border-color: rgba(74,222,128,.25);
+      color: $green;
+    }
+  }
+
+  &__title {
+    font-size: 1.05rem; font-weight: 800; color: $tp; margin: 0 0 3px;
+  }
+  &__sub {
+    font-size: .8rem; color: $tm; margin: 0;
+  }
+
+  &__actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+    margin-top: 24px; flex-wrap: wrap;
+  }
+}
+
+/* ── Form grid ───────────────────────────────────────── */
+.pc-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.pc-field { }
+.pc-field--full { grid-column: 1 / -1; }
+
+.pc-input {
+  :deep(.q-field__control) {
+    background: rgba(255,255,255,.04) !important;
+    border-radius: 10px !important;
+  }
+  :deep(input) { color: $tp !important; font-weight: 500; }
+  :deep(.q-field__label) { color: $tm !important; }
+  :deep(.q-field__bottom) { color: $red !important; font-size: .72rem; }
+}
+
+.pc-checkbox {
+  :deep(.q-checkbox__label) { color: $tm; font-size: .82rem; }
+}
+
+/* ── Buttons ─────────────────────────────────────────── */
+.pc-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px; border-radius: 100px; border: none; cursor: pointer;
+  font-size: .88rem; font-weight: 800; letter-spacing: .3px;
+  transition: background .2s, transform .15s, box-shadow .2s;
+
+  &--primary {
+    background: linear-gradient(135deg, $orange, darken($orange, 10%));
+    color: white;
+    box-shadow: 0 4px 20px rgba(255,107,53,.3);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,53,.45); }
+  }
+
+  &--ghost {
+    background: rgba(255,255,255,.06);
+    color: $tm;
+    border: 1px solid $border2;
+    &:hover { background: rgba(255,255,255,.1); color: $tp; }
+  }
+
+  &--fire {
+    background: linear-gradient(135deg, $orange 0%, $red 100%);
+    color: white;
+    box-shadow: 0 4px 24px rgba(230,57,70,.35);
+    &:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(255,107,53,.5); }
+  }
+}
+
+/* ── Card preview ────────────────────────────────────── */
+.card-preview {
+  background: linear-gradient(135deg, #1a1020 0%, #2a1520 50%, #1a0a15 100%);
+  border: 1px solid rgba(255,107,53,.2);
+  border-radius: 16px; padding: 20px 22px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,53,.15), transparent 70%);
+  }
+
+  &__chip {
+    color: $amber; margin-bottom: 16px;
+  }
+
+  &__number {
+    font-size: 1.1rem; font-weight: 800; color: $tp;
+    letter-spacing: 2px; font-family: monospace;
+    margin-bottom: 16px;
+  }
+
+  &__bottom {
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+
+  &__micro {
+    display: block; font-size: .65rem; color: $tm;
+    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px;
+  }
+
+  &__val {
+    font-size: .82rem; font-weight: 700; color: $tp;
+    font-family: monospace;
+  }
+}
+
+/* ── Step 3: Confirm list ────────────────────────────── */
+.confirm-list {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 20px;
+}
+
+.confirm-item {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid $border;
+  border-radius: $rlg;
+  transition: border-color .2s;
+  &:hover { border-color: $border2; }
+
+  &__left { display: flex; align-items: center; gap: 10px; }
+  &__dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: $orange; flex-shrink: 0;
+  }
+  &__info { display: flex; flex-direction: column; gap: 2px; }
+  &__name { font-size: .88rem; font-weight: 700; color: $tp; }
+  &__meta { font-size: .73rem; color: $tm; }
+  &__price { font-size: .9rem; font-weight: 900; color: $amber; white-space: nowrap; }
+}
+
+.confirm-total {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 0;
+  border-top: 2px dashed rgba(255,107,53,.3);
+  margin-top: 8px;
+
+  &__label { font-size: .85rem; font-weight: 700; color: $tm; }
+  &__value {
+    font-size: 1.45rem; font-weight: 900;
+    color: $orange;
+    text-shadow: 0 0 24px rgba(255,107,53,.4);
+  }
+}
+
+/* ── Summary sidebar ─────────────────────────────────── */
+.pc-summary-col { position: sticky; top: 80px; }
+
+.pc-summary {
+  background: $dark;
+  border: 1px solid $border;
+  border-radius: $rxl;
+  overflow: hidden;
+
+  &__header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 20px;
+    background: rgba(255,107,53,.07);
+    border-bottom: 1px solid rgba(255,107,53,.15);
+    font-size: .8rem; font-weight: 800; color: $orange;
+    text-transform: uppercase; letter-spacing: .8px;
+  }
+
+  &__icon { color: $orange; }
+
+  &__items {
+    display: flex; flex-direction: column;
+    padding: 16px 20px; gap: 14px;
+  }
+
+  &__item {
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+
+  &__item-img {
+    position: relative; flex-shrink: 0;
+  }
+
+  &__img {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    border: 1px solid $border;
+  }
+
+  &__item-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: $orange; color: white;
+    font-size: .65rem; font-weight: 800;
+    padding: 2px 5px; border-radius: 100px;
+    border: 1.5px solid $dark;
+  }
+
+  &__item-info {
+    flex: 1; display: flex; flex-direction: column; gap: 3px;
+  }
+
+  &__item-name  { font-size: .85rem; font-weight: 700; color: $tp; }
+  &__item-entries {
+    display: flex; align-items: center; gap: 4px;
+    font-size: .72rem; color: $tm;
+    .q-icon { color: $amber; }
+  }
+  &__item-price { font-size: .72rem; color: $tm; }
+
+  &__item-sub {
+    font-size: .85rem; font-weight: 800; color: $tp; white-space: nowrap;
+  }
+
+  &__divider { height: 1px; background: $border; margin: 0 20px; }
+
+  &__stat { padding: 14px 20px; }
+  &__stat-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .82rem; color: $tm;
+    strong { color: $tp; font-weight: 800; margin-left: auto; }
+  }
+
+  &__total {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+  }
+  &__total span:first-child { font-size: .85rem; font-weight: 700; color: $tm; }
+  &__total-val {
+    font-size: 1.3rem; font-weight: 900; color: $orange;
+    text-shadow: 0 0 20px rgba(255,107,53,.35);
+  }
+
+  &__secure {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 12px 20px 16px;
+    font-size: .72rem; color: $tm;
+    border-top: 1px solid $border;
+    .q-icon { color: $green; }
+  }
+}
+
+/* ── Transition ──────────────────────────────────────── */
+.step-fade-enter-active, .step-fade-leave-active {
+  transition: opacity .25s ease, transform .25s ease;
+}
+.step-fade-enter-from {
+  opacity: 0; transform: translateX(16px);
+}
+.step-fade-leave-to {
+  opacity: 0; transform: translateX(-16px);
+}
+
+.img-pequeña {
+  width: 100px;
+  height: 100px;
+}
 </style>
